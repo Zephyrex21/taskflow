@@ -1,5 +1,5 @@
 const express = require('express');
-const mockAuth = require('../middleware/mockAuth');
+const verifyToken = require('../middleware/verifyToken');
 const {
   createTask,
   getTasks,
@@ -11,9 +11,7 @@ const {
 
 const router = express.Router();
 
-// TEMP: using mockAuth until Sumit's verifyToken middleware is merged.
-// Swap the import above to '../middleware/verifyToken' when it's ready.
-router.use(mockAuth);
+router.use(verifyToken);
 
 router.get('/', getTasks);
 router.post('/', createTask);
