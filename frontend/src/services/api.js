@@ -100,7 +100,6 @@ async function request(path, { method = "GET", body, token } = {}) {
   const json = await res.json()
   return json.data !== undefined ? json.data : json
 }
-}
 
 // ---------------------------------------------------------------------------
 // Auth endpoints
