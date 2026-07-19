@@ -4,6 +4,7 @@
   "private": true,
   "main": "src/server.js",
   "scripts": {
+    "test": "vitest run",
     "start": "node src/server.js",
     "dev": "node --watch src/server.js"
   },
@@ -16,5 +17,9 @@
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^9.7.4",
     "morgan": "^1.11.0"
+  },
+  "devDependencies": {
+    "vitest": "^2.1.8",
+    "supertest": "^7.0.0"
   }
 }
