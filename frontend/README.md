@@ -1,33 +1,41 @@
-# React + TypeScript + Vite
+# TaskFlow
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+A task manager UI — register/login, personal to-do board with drag-free
+status columns, priority and due-date filtering, and a claymorphism design
+system with animated landing page. Fully frontend-only: all data lives in
+mock storage in the browser, no backend or database required.
 
-Currently, two official plugins are available:
+## Stack
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+- React 19 + Vite + TypeScript
+- React Router v7
+- Tailwind CSS v4 + shadcn/ui (Radix primitives)
+- GSAP + ScrollTrigger, Motion (formerly Framer Motion), Lenis smooth scroll
 
-## React Compiler
+## Getting started
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
-
-## Expanding the Oxlint configuration
-
-If you are developing a production application, we recommend enabling type-aware lint rules by installing `oxlint-tsgolint` and editing `.oxlintrc.json`:
-
-```json
-{
-  "$schema": "./node_modules/oxlint/configuration_schema.json",
-  "plugins": ["react", "typescript", "oxc"],
-  "options": {
-    "typeAware": true
-  },
-  "rules": {
-    "react/rules-of-hooks": "error",
-    "react/only-export-components": ["warn", { "allowConstantExport": true }]
-  }
-}
+```bash
+npm install
+cp .env.example .env
+npm run dev
 ```
 
-See the [Oxlint rules documentation](https://oxc.rs/docs/guide/usage/linter/rules) for the full list of rules and categories.
-hello sumit  the leader miss u at jantAR MANTAR
+Open the local URL Vite prints. Register an account (stored in mock data
+for the session) and start creating tasks.
+
+## Structure
+
+```
+src/
+├── pages/        Landing, Login, Register, Dashboard
+├── components/   Navbar, TaskCard, TaskForm, ui/ (shadcn components)
+├── services/     api.js — mock data layer
+├── context/      AuthContext.js — auth state
+└── hooks/        useLenis.ts — smooth scroll setup
+```
+
+## Build
+
+```bash
+npm run build
+```

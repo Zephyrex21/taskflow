@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react"
 import { AnimatePresence } from "motion/react"
 import gsap from "gsap"
-import { Plus, Search } from "lucide-react"
+import { Plus, Search, X } from "lucide-react"
 import { useAuth } from "@/context/AuthContext"
 import * as api from "@/services/api"
 import type { Task, TaskPriority, TaskStatus } from "@/types"
@@ -30,6 +30,15 @@ const COLUMNS: { status: TaskStatus; label: string; accent: string }[] = [
   { status: "in-progress", label: "In progress", accent: "bg-progress" },
   { status: "done", label: "Done", accent: "bg-done" },
 ]
+
+function sortByDueDate(tasks: Task[]) {
+  return [...tasks].sort((a, b) => {
+    if (!a.dueDate && !b.dueDate) return 0
+    if (!a.dueDate) return 1
+    if (!b.dueDate) return -1
+    return new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime()
+  })
+}
 
 export default function Dashboard() {
   const { token } = useAuth()
@@ -83,8 +92,27 @@ export default function Dashboard() {
   const tasksByStatus = useMemo(() => {
     const grouped: Record<TaskStatus, Task[]> = { todo: [], "in-progress": [], done: [] }
     for (const task of filteredTasks) grouped[task.status].push(task)
-    return grouped
+    return {
+      todo: sortByDueDate(grouped.todo),
+      "in-progress": sortByDueDate(grouped["in-progress"]),
+      done: sortByDueDate(grouped.done),
+    }
   }, [filteredTasks])
+
+  const stats = useMemo(() => {
+    const overdue = tasks.filter(
+      (t) => t.dueDate && t.status !== "done" && new Date(t.dueDate) < new Date()
+    ).length
+    const done = tasks.filter((t) => t.status === "done").length
+    return {
+      total: tasks.length,
+      inProgress: tasks.filter((t) => t.status === "in-progress").length,
+      done,
+      overdue,
+    }
+  }, [tasks])
+
+  const hasFilters = priorityFilter !== "all" || query.trim().length > 0
 
   async function handleCreate(values: TaskFormValues) {
     const created = await api.createTask(token, { ...values, status: "todo" })
@@ -112,11 +140,11 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-ink">
+    <div className="min-h-screen bg-ink pb-16">
       <Navbar />
 
       <main className="mx-auto max-w-6xl px-6 py-10">
-        <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+        <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <div>
             <h1 className="font-display text-2xl font-medium">Your board</h1>
             <p className="mt-1 text-sm text-paper-dim">
@@ -129,14 +157,33 @@ export default function Dashboard() {
           </Button>
         </div>
 
+        {!isLoading && stats.total > 0 && (
+          <div className="mb-8 grid grid-cols-2 gap-3 sm:grid-cols-4">
+            {[
+              { label: "Total", value: stats.total, dot: "bg-flow" },
+              { label: "In progress", value: stats.inProgress, dot: "bg-progress" },
+              { label: "Done", value: stats.done, dot: "bg-done" },
+              { label: "Overdue", value: stats.overdue, dot: "bg-danger" },
+            ].map((s) => (
+              <div key={s.label} className="clay-sm bg-ink-raised px-4 py-3">
+                <div className="flex items-center gap-1.5">
+                  <span className={`h-1.5 w-1.5 rounded-full ${s.dot}`} />
+                  <span className="text-xs text-paper-dim">{s.label}</span>
+                </div>
+                <p className="mt-1 font-display text-xl font-medium">{s.value}</p>
+              </div>
+            ))}
+          </div>
+        )}
+
         <div className="mb-8 flex flex-col gap-3 sm:flex-row sm:items-center">
           <div className="relative flex-1">
-            <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-paper-dim" />
+            <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-paper-dim" />
             <Input
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder="Search tasks…"
-              className="pl-9"
+              className="pl-10"
             />
           </div>
           <Select value={priorityFilter} onValueChange={(v) => setPriorityFilter(v as TaskPriority | "all")}>
@@ -150,10 +197,23 @@ export default function Dashboard() {
               <SelectItem value="high">High</SelectItem>
             </SelectContent>
           </Select>
+          {hasFilters && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => {
+                setQuery("")
+                setPriorityFilter("all")
+              }}
+            >
+              <X className="h-3.5 w-3.5" />
+              Clear
+            </Button>
+          )}
         </div>
 
         {error && (
-          <p role="alert" className="mb-6 text-sm text-danger">
+          <p role="alert" className="clay-sm mb-6 bg-danger/10 px-4 py-3 text-sm text-danger">
             {error}
           </p>
         )}
@@ -161,13 +221,24 @@ export default function Dashboard() {
         {isLoading ? (
           <div className="grid gap-4 sm:grid-cols-3">
             {[0, 1, 2].map((i) => (
-              <div key={i} className="h-64 animate-pulse rounded-xl bg-ink-raised" />
+              <div key={i} className="clay h-64 animate-pulse bg-ink-raised/60" />
             ))}
+          </div>
+        ) : stats.total === 0 ? (
+          <div className="clay flex flex-col items-center gap-2 bg-ink-raised px-6 py-16 text-center">
+            <p className="font-display text-lg font-medium">Your board is empty</p>
+            <p className="max-w-sm text-sm text-paper-dim">
+              Create your first task to start tracking work — it'll land in To do.
+            </p>
+            <Button className="mt-4" onClick={() => setIsDialogOpen(true)}>
+              <Plus className="h-4 w-4" />
+              New task
+            </Button>
           </div>
         ) : (
           <div ref={boardRef} className="grid gap-4 sm:grid-cols-3">
             {COLUMNS.map(({ status, label, accent }) => (
-              <div key={status} data-column className="flex flex-col gap-3">
+              <div key={status} data-column className="clay-inset flex flex-col gap-3 bg-ink-raised/40 p-3">
                 <div className="flex items-center gap-2 px-1">
                   <span className={`h-1.5 w-1.5 rounded-full ${accent}`} />
                   <h2 className="text-xs font-medium uppercase tracking-wide text-paper-dim">
@@ -188,7 +259,7 @@ export default function Dashboard() {
                     ))}
                   </AnimatePresence>
                   {tasksByStatus[status].length === 0 && (
-                    <div className="rounded-xl border border-dashed border-ink-line px-4 py-6 text-center text-xs text-paper-dim/60">
+                    <div className="rounded-2xl border border-dashed border-ink-line px-4 py-6 text-center text-xs text-paper-dim/60">
                       Nothing here yet
                     </div>
                   )}

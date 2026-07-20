@@ -13,10 +13,12 @@ export function Navbar() {
   }
 
   return (
-    <header className="sticky top-0 z-40 border-b border-ink-line bg-ink/80 backdrop-blur-md">
-      <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-6">
+    <header className="sticky top-4 z-40 px-4">
+      <div className="clay mx-auto flex h-16 max-w-6xl items-center justify-between bg-ink-raised px-6">
         <Link to={isAuthenticated ? "/dashboard" : "/"} className="flex items-center gap-2">
-          <Waves className="h-5 w-5 text-flow" />
+          <span className="clay-sm flex h-8 w-8 items-center justify-center bg-flow">
+            <Waves className="h-4 w-4 text-ink-raised" />
+          </span>
           <span className="font-display text-sm font-medium">TaskFlow</span>
         </Link>
 

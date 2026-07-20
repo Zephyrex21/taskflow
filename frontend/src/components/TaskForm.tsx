@@ -64,7 +64,7 @@ export function TaskForm({ initialValues, onSubmit, onCancel, submitLabel = "Add
           onChange={(e) => setDescription(e.target.value)}
           placeholder="Add more detail (optional)"
           rows={3}
-          className="flex w-full rounded-lg border border-ink-line bg-ink-raised px-3 py-2 text-sm text-paper placeholder:text-paper-dim/60 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-flow resize-none"
+          className="flex w-full rounded-xl clay-inset bg-ink-raised px-4 py-2 text-sm text-paper placeholder:text-paper-dim/60 transition-shadow focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-flow resize-none"
         />
       </div>
 
